@@ -1,18 +1,11 @@
-# phase 0
-# build phase
-FROM node:12-alpine
+FROM node:alpine as builder
 WORKDIR '/app'
-COPY package.json .
+COPY ./package.json ./
 RUN npm install
 COPY . .
 RUN npm run build
 
-# phase 1
-# run phase
 FROM nginx
-# elasticbeanstalk will add the port mapping automatically for this
 EXPOSE 3000
 COPY ./nginx/default.conf /etc/nginx/conf.d/default.conf
-# copy --from=0 defines that we want to copy something from a different phase
-COPY --from=0 /app/build /usr/share/nginx/html
-
+COPY --from=builder /app/build /usr/share/nginx/html
